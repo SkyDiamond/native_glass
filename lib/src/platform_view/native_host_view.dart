@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../diagnostics/diagnostics.dart';
 import 'prop_diff.dart';
 
 typedef NativeGlassViewEventHandler = void Function(MethodCall call);
@@ -29,6 +30,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   MethodChannel? _channel;
   Map<String, Object?>? _previousProps;
   Map<String, Object?>? _pendingProps;
+  NativeGlassRendererRegistration? _diagnosticsRegistration;
 
   @override
   void initState() {
@@ -46,6 +48,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   void dispose() {
     _channel?.invokeMethod<void>('dispose');
     _channel?.setMethodCallHandler(null);
+    _diagnosticsRegistration?.dispose();
     super.dispose();
   }
 
@@ -64,6 +67,8 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   }
 
   void _onPlatformViewCreated(int id) {
+    _diagnosticsRegistration ??=
+        NativeGlassDiagnostics.registerNativeRenderer();
     final channel = MethodChannel('native_glass/view_$id');
     channel.setMethodCallHandler((call) async {
       widget.onEvent?.call(call);
