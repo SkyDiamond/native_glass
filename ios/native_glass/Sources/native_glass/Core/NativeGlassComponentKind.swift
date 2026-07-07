@@ -1,5 +1,6 @@
 enum NativeGlassComponentKind: String {
   case placeholder
+  case navigationBar
   case tabBar
 
   init(rawValue: String?) {

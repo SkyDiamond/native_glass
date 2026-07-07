@@ -51,6 +51,12 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
         props: props,
         eventSink: eventSink
       )
+    case .navigationBar:
+      return NativeGlassNavigationBarComponent(
+        frame: frame,
+        props: props,
+        eventSink: eventSink
+      )
     case .tabBar:
       return NativeGlassTabBarComponent(
         frame: frame,
