@@ -17,12 +17,14 @@ class NativeGlassTabBar extends StatefulWidget {
     required this.onDestinationSelected,
     required this.destinations,
     this.renderMode,
+    this.height = 80,
   }) : assert(destinations.length >= 2 && destinations.length <= 5);
 
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
   final List<NativeGlassDestination> destinations;
   final NativeGlassRenderMode? renderMode;
+  final double height;
 
   @override
   State<NativeGlassTabBar> createState() => _NativeGlassTabBarState();
@@ -33,10 +35,13 @@ class _NativeGlassTabBarState extends State<NativeGlassTabBar> {
 
   @override
   Widget build(BuildContext context) {
-    final fallback = FallbackNativeGlassTabBar(
-      selectedIndex: widget.selectedIndex,
-      onDestinationSelected: widget.onDestinationSelected,
-      destinations: widget.destinations,
+    final fallback = SizedBox(
+      height: widget.height,
+      child: FallbackNativeGlassTabBar(
+        selectedIndex: widget.selectedIndex,
+        onDestinationSelected: widget.onDestinationSelected,
+        destinations: widget.destinations,
+      ),
     );
     final theme = NativeGlassTheme.of(context);
     final props = NativeGlassTabBarProps(
@@ -65,16 +70,19 @@ class _NativeGlassTabBarState extends State<NativeGlassTabBar> {
           return fallback;
         }
 
-        return NativeGlassNativeHostView(
-          creationParams: props.toCreationParams(),
-          props: props.toProps(),
-          onEvent: (call) {
-            if (call.method != 'onDestinationSelected') return;
-            final arguments = call.arguments;
-            if (arguments is Map && arguments['index'] is int) {
-              widget.onDestinationSelected(arguments['index'] as int);
-            }
-          },
+        return SizedBox(
+          height: widget.height,
+          child: NativeGlassNativeHostView(
+            creationParams: props.toCreationParams(),
+            props: props.toProps(),
+            onEvent: (call) {
+              if (call.method != 'onDestinationSelected') return;
+              final arguments = call.arguments;
+              if (arguments is Map && arguments['index'] is int) {
+                widget.onDestinationSelected(arguments['index'] as int);
+              }
+            },
+          ),
         );
       },
     );
