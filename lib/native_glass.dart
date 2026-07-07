@@ -1,14 +1,17 @@
-// You have generated a new plugin project without specifying the `--platforms`
-// flag. A plugin project with no platform support was generated. To add a
-// platform, run `flutter create -t plugin --platforms <platforms> .` under the
-// same directory. You can also find a detailed instruction on how to add
-// platforms in the `pubspec.yaml` at
-// https://flutter.dev/to/pubspec-plugin-platforms.
-
-import 'native_glass_platform_interface.dart';
-
-class NativeGlass {
-  Future<String?> getPlatformVersion() {
-    return NativeGlassPlatform.instance.getPlatformVersion();
-  }
-}
+export 'src/adaptive/availability.dart';
+export 'src/adaptive/config.dart';
+export 'src/adaptive/render_policy.dart'
+    show
+        NativeGlassFallbackReason,
+        NativeGlassNativeFailureBehavior,
+        NativeGlassRenderMode;
+export 'src/adaptive/theme.dart';
+export 'src/diagnostics/diagnostic_event.dart';
+export 'src/diagnostics/diagnostics.dart';
+export 'src/models/badge.dart';
+export 'src/models/destination.dart';
+export 'src/models/icon.dart';
+export 'src/models/style.dart';
+export 'src/widgets/button/native_glass_button.dart';
+export 'src/widgets/container/native_glass_container.dart';
+export 'src/widgets/tab_bar/native_glass_tab_bar.dart';

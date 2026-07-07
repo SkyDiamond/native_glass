@@ -1,0 +1,97 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
+import 'prop_diff.dart';
+
+typedef NativeGlassViewEventHandler = void Function(MethodCall call);
+
+class NativeGlassNativeHostView extends StatefulWidget {
+  const NativeGlassNativeHostView({
+    super.key,
+    required this.creationParams,
+    required this.props,
+    this.onEvent,
+  });
+
+  static const viewType = 'native_glass/host';
+
+  final Map<String, Object?> creationParams;
+  final Map<String, Object?> props;
+  final NativeGlassViewEventHandler? onEvent;
+
+  @override
+  State<NativeGlassNativeHostView> createState() =>
+      _NativeGlassNativeHostViewState();
+}
+
+class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
+  MethodChannel? _channel;
+  Map<String, Object?>? _previousProps;
+  Map<String, Object?>? _pendingProps;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousProps = widget.props;
+  }
+
+  @override
+  void didUpdateWidget(NativeGlassNativeHostView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncProps(widget.props);
+  }
+
+  @override
+  void dispose() {
+    _channel?.invokeMethod<void>('dispose');
+    _channel?.setMethodCallHandler(null);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (defaultTargetPlatform != TargetPlatform.iOS) {
+      return const SizedBox.shrink();
+    }
+
+    return UiKitView(
+      viewType: NativeGlassNativeHostView.viewType,
+      creationParams: widget.creationParams,
+      creationParamsCodec: const StandardMessageCodec(),
+      onPlatformViewCreated: _onPlatformViewCreated,
+    );
+  }
+
+  void _onPlatformViewCreated(int id) {
+    final channel = MethodChannel('native_glass/view_$id');
+    channel.setMethodCallHandler((call) async {
+      widget.onEvent?.call(call);
+    });
+    _channel = channel;
+
+    final pendingProps = _pendingProps;
+    if (pendingProps != null) {
+      _pendingProps = null;
+      _syncProps(pendingProps);
+    }
+  }
+
+  void _syncProps(Map<String, Object?> nextProps) {
+    final diff = diffProps(_previousProps, nextProps);
+    if (diff.isEmpty) return;
+
+    final channel = _channel;
+    if (channel == null) {
+      _pendingProps = nextProps;
+      return;
+    }
+
+    channel.invokeMethod<void>('updateProps', {
+      'schema_version': 1,
+      'props': nextProps,
+      'diff': diff,
+    });
+    _previousProps = nextProps;
+  }
+}
