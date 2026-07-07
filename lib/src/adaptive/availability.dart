@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 import 'render_policy.dart';
 
@@ -112,6 +113,32 @@ class NativeGlassAvailability {
       fallbackReason: payload?['supports_native_renderer'] == true
           ? null
           : NativeGlassFallbackReason.nativeRendererUnavailable,
+    );
+  }
+}
+
+typedef NativeGlassAvailabilityWidgetBuilder =
+    Widget Function(BuildContext context, NativeGlassAvailability availability);
+
+class NativeGlassAvailabilityBuilder extends StatelessWidget {
+  const NativeGlassAvailabilityBuilder({
+    super.key,
+    required this.builder,
+    this.placeholder = const SizedBox.shrink(),
+  });
+
+  final NativeGlassAvailabilityWidgetBuilder builder;
+  final Widget placeholder;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<NativeGlassAvailability>(
+      future: NativeGlassAvailability.check(),
+      builder: (context, snapshot) {
+        final availability = snapshot.data;
+        if (availability == null) return placeholder;
+        return builder(context, availability);
+      },
     );
   }
 }
