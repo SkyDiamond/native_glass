@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import '../../adaptive/availability.dart';
 import '../../adaptive/render_policy.dart';
 import '../../adaptive/theme.dart';
+import '../../diagnostics/diagnostic_event.dart';
+import '../../diagnostics/diagnostics.dart';
 import '../../models/destination.dart';
 import '../../platform_view/native_host_view.dart';
 import 'fallback_tab_bar.dart';
@@ -47,6 +49,7 @@ class NativeGlassTabBar extends StatelessWidget {
           config: theme.config,
           availability: availability,
         );
+        _emitRenderDecision(decision, theme.config.diagnosticsEnabled);
 
         if (decision.renderer == NativeGlassRenderer.flutterFallback) {
           return fallback;
@@ -64,6 +67,21 @@ class NativeGlassTabBar extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  void _emitRenderDecision(
+    NativeGlassRenderDecision decision,
+    bool diagnosticsEnabled,
+  ) {
+    if (!diagnosticsEnabled) return;
+    NativeGlassDiagnostics.emit(
+      NativeGlassDiagnosticEvent(
+        message:
+            'NativeGlassTabBar rendered with ${decision.renderer.name}. '
+            'Reason: ${decision.diagnosticMessage}',
+        fallbackReason: decision.fallbackReason,
+      ),
     );
   }
 }
