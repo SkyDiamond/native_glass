@@ -51,4 +51,66 @@ void main() {
     );
     expect(events.last.message, contains('NativeGlassTabBar'));
   });
+
+  testWidgets('does not emit diagnostics synchronously during build', (
+    tester,
+  ) async {
+    NativeGlassAvailability.debugCheckOverride = () async {
+      return const NativeGlassAvailability(
+        isIOS: true,
+        supportsNativeRenderer: true,
+        supportsLiquidGlass: true,
+      );
+    };
+
+    await tester.pumpWidget(const _DiagnosticsSetStateHarness());
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining('Events:'), findsOneWidget);
+  });
+}
+
+class _DiagnosticsSetStateHarness extends StatefulWidget {
+  const _DiagnosticsSetStateHarness();
+
+  @override
+  State<_DiagnosticsSetStateHarness> createState() =>
+      _DiagnosticsSetStateHarnessState();
+}
+
+class _DiagnosticsSetStateHarnessState
+    extends State<_DiagnosticsSetStateHarness> {
+  var _eventCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    NativeGlassDiagnostics.listener = (_) {
+      setState(() => _eventCount += 1);
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Text('Events: $_eventCount'),
+        bottomNavigationBar: NativeGlassTabBar(
+          selectedIndex: 0,
+          onDestinationSelected: (_) {},
+          destinations: const [
+            NativeGlassDestination(
+              label: 'Home',
+              icon: NativeGlassIcon.flutterIcon(Icons.home_outlined),
+            ),
+            NativeGlassDestination(
+              label: 'Search',
+              icon: NativeGlassIcon.flutterIcon(Icons.search),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

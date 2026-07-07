@@ -10,7 +10,7 @@ import '../../platform_view/native_host_view.dart';
 import 'fallback_tab_bar.dart';
 import 'tab_bar_props.dart';
 
-class NativeGlassTabBar extends StatelessWidget {
+class NativeGlassTabBar extends StatefulWidget {
   const NativeGlassTabBar({
     super.key,
     required this.selectedIndex,
@@ -25,16 +25,23 @@ class NativeGlassTabBar extends StatelessWidget {
   final NativeGlassRenderMode? renderMode;
 
   @override
+  State<NativeGlassTabBar> createState() => _NativeGlassTabBarState();
+}
+
+class _NativeGlassTabBarState extends State<NativeGlassTabBar> {
+  String? _lastDiagnosticSignature;
+
+  @override
   Widget build(BuildContext context) {
     final fallback = FallbackNativeGlassTabBar(
-      selectedIndex: selectedIndex,
-      onDestinationSelected: onDestinationSelected,
-      destinations: destinations,
+      selectedIndex: widget.selectedIndex,
+      onDestinationSelected: widget.onDestinationSelected,
+      destinations: widget.destinations,
     );
     final theme = NativeGlassTheme.of(context);
     final props = NativeGlassTabBarProps(
-      selectedIndex: selectedIndex,
-      destinations: destinations,
+      selectedIndex: widget.selectedIndex,
+      destinations: widget.destinations,
     );
 
     return FutureBuilder<NativeGlassAvailability>(
@@ -45,11 +52,14 @@ class NativeGlassTabBar extends StatelessWidget {
 
         final decision = resolveNativeGlassRenderPolicy(
           component: NativeGlassComponentRole.systemSurface,
-          requestedMode: renderMode,
+          requestedMode: widget.renderMode,
           config: theme.config,
           availability: availability,
         );
-        _emitRenderDecision(decision, theme.config.diagnosticsEnabled);
+        _scheduleRenderDecisionDiagnostic(
+          decision,
+          theme.config.diagnosticsEnabled,
+        );
 
         if (decision.renderer == NativeGlassRenderer.flutterFallback) {
           return fallback;
@@ -62,7 +72,7 @@ class NativeGlassTabBar extends StatelessWidget {
             if (call.method != 'onDestinationSelected') return;
             final arguments = call.arguments;
             if (arguments is Map && arguments['index'] is int) {
-              onDestinationSelected(arguments['index'] as int);
+              widget.onDestinationSelected(arguments['index'] as int);
             }
           },
         );
@@ -70,18 +80,29 @@ class NativeGlassTabBar extends StatelessWidget {
     );
   }
 
-  void _emitRenderDecision(
+  void _scheduleRenderDecisionDiagnostic(
     NativeGlassRenderDecision decision,
     bool diagnosticsEnabled,
   ) {
     if (!diagnosticsEnabled) return;
-    NativeGlassDiagnostics.emit(
-      NativeGlassDiagnosticEvent(
-        message:
-            'NativeGlassTabBar rendered with ${decision.renderer.name}. '
-            'Reason: ${decision.diagnosticMessage}',
-        fallbackReason: decision.fallbackReason,
-      ),
-    );
+    final signature = [
+      decision.renderer.name,
+      decision.fallbackReason.name,
+      decision.diagnosticMessage,
+    ].join('|');
+    if (_lastDiagnosticSignature == signature) return;
+    _lastDiagnosticSignature = signature;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      NativeGlassDiagnostics.emit(
+        NativeGlassDiagnosticEvent(
+          message:
+              'NativeGlassTabBar rendered with ${decision.renderer.name}. '
+              'Reason: ${decision.diagnosticMessage}',
+          fallbackReason: decision.fallbackReason,
+        ),
+      );
+    });
   }
 }
