@@ -30,4 +30,17 @@ void main() {
     expect(size.width, 58);
     expect(size.height, 58);
   });
+
+  testWidgets('degrades without BackdropFilter when blur is zero', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: NativeGlassContainer(blur: 0, child: Text('Cheap surface')),
+      ),
+    );
+
+    expect(find.byType(BackdropFilter), findsNothing);
+    expect(find.text('Cheap surface'), findsOneWidget);
+  });
 }
