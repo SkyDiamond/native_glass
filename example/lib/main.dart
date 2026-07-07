@@ -66,7 +66,27 @@ class _NativeGlassExampleAppState extends State<NativeGlassExampleApp> {
       ),
       child: MaterialApp(
         home: Scaffold(
-          appBar: AppBar(title: const Text('native_glass')),
+          appBar: NativeGlassNavigationBar(
+            title: 'native_glass',
+            renderMode: _renderMode,
+            trailingActions: const [
+              NativeGlassNavigationAction(
+                id: 'policy',
+                label: 'Policy',
+                icon: NativeGlassIcon.sfSymbol('slider.horizontal.3'),
+              ),
+              NativeGlassNavigationAction(
+                id: 'diagnostics',
+                label: 'Diagnostics',
+                icon: NativeGlassIcon.sfSymbol('waveform.path.ecg'),
+              ),
+            ],
+            onActionSelected: (id) {
+              setState(() {
+                _pageIndex = id == 'diagnostics' ? 4 : 3;
+              });
+            },
+          ),
           body: pages[_pageIndex],
           bottomNavigationBar: NavigationBar(
             selectedIndex: _pageIndex,
@@ -123,7 +143,7 @@ class _ShowcaseDemo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _DemoPage(
-      title: 'Phase 1 Showcase',
+      title: 'Phase 2 Showcase',
       children: [
         NativeGlassAvailabilityBuilder(
           builder: (context, availability) {

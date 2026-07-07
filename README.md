@@ -8,7 +8,7 @@ It is designed as a broader, performance-aware package rather than a native-ever
 
 Use the Native Renderer for:
 
-- System Surfaces such as tab bars.
+- System Surfaces such as tab bars and navigation bars.
 - A small number of native views per Screen.
 - UI where UIKit behavior matters.
 
@@ -19,15 +19,16 @@ Use Flutter Fallback for:
 - Arbitrary Flutter children.
 - Non-iOS platforms or unavailable native paths.
 
-## MVP Widgets
+## Current Widgets
 
+- `NativeGlassNavigationBar`
 - `NativeGlassTabBar`
 - `NativeGlassButton`
 - `NativeGlassContainer`
 - `NativeGlassTheme`
 - `NativeGlassAvailabilityBuilder`
 
-`NativeGlassTabBar` can use the Native Renderer on supported iOS paths. `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback widgets in the MVP.
+`NativeGlassNavigationBar` and `NativeGlassTabBar` can use the Native Renderer on supported iOS paths. `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback widgets.
 
 ## Basic Usage
 
@@ -48,6 +49,26 @@ NativeGlassTabBar(
       icon: NativeGlassIcon.sfSymbol('magnifyingglass'),
     ),
   ],
+)
+```
+
+As an app bar:
+
+```dart
+Scaffold(
+  appBar: NativeGlassNavigationBar(
+    title: 'Portfolio',
+    trailingActions: const [
+      NativeGlassNavigationAction(
+        id: 'search',
+        label: 'Search',
+        icon: NativeGlassIcon.sfSymbol('magnifyingglass'),
+      ),
+    ],
+    onActionSelected: (id) {
+      // Route or update state from Flutter.
+    },
+  ),
 )
 ```
 
@@ -79,8 +100,7 @@ Liquid Glass means Apple's native iOS 26+ behavior only. Older iOS versions may 
 ## Known Limitations
 
 - Native Renderer uses PlatformViews and can have composition limitations with Flutter overlays and effects.
-- `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback in the MVP.
-- `NativeGlassNavigationBar` is not in the MVP.
+- `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback.
 - Flutter `IconData` is not supported by the Native Renderer tab bar in the MVP. Use `sfSymbol` or `nativeAsset` for native tab bar icons.
 - PlatformView Budget diagnostics warn; they do not automatically force fallback.
 - iOS integration testing currently starts with manual/device or simulator verification.
