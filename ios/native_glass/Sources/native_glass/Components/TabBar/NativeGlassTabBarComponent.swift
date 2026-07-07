@@ -59,7 +59,7 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
 
     let itemAppearance = UITabBarItemAppearance()
     itemAppearance.normal.iconColor = .systemGray
-    itemAppearance.selected.iconColor = .tintColor
+    itemAppearance.selected.iconColor = .systemBlue
 
     let labelFont = UIFont.systemFont(ofSize: 10, weight: .medium)
     itemAppearance.normal.titleTextAttributes = [
