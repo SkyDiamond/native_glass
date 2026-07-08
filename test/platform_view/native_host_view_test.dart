@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:native_glass/src/adaptive/render_policy.dart';
@@ -109,6 +110,49 @@ void main() {
         isNot(contains(NativeGlassFallbackReason.platformViewBudgetExceeded)),
       );
     } finally {
+      debugDefaultTargetPlatformOverride = previousTargetPlatform;
+    }
+  });
+
+  testWidgets('notifies the native host when the Dart handler is ready', (
+    tester,
+  ) async {
+    final previousTargetPlatform = debugDefaultTargetPlatformOverride;
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    final calls = <String>[];
+    final messenger = tester.binding.defaultBinaryMessenger;
+    const channel = MethodChannel('native_glass/view_42');
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      calls.add(call.method);
+      return null;
+    });
+
+    try {
+      await tester.pumpWidget(
+        const Directionality(
+          textDirection: TextDirection.ltr,
+          child: SizedBox(
+            width: 100,
+            height: 80,
+            child: NativeGlassNativeHostView(
+              creationParams: {
+                'schema_version': 1,
+                'component': 'placeholder',
+                'props': <String, Object?>{},
+              },
+              props: <String, Object?>{},
+            ),
+          ),
+        ),
+      );
+
+      final view = tester.widget<UiKitView>(find.byType(UiKitView));
+      view.onPlatformViewCreated?.call(42);
+      await tester.pump();
+
+      expect(calls, contains('ready'));
+    } finally {
+      messenger.setMockMethodCallHandler(channel, null);
       debugDefaultTargetPlatformOverride = previousTargetPlatform;
     }
   });

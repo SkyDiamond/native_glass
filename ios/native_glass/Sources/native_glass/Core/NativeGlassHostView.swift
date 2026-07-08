@@ -8,6 +8,8 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
   private let channel: FlutterMethodChannel
   private var component: NativeGlassComponent?
   private var eventSink: NativeGlassEventSink?
+  private var isDartHandlerReady = false
+  private var pendingProtocolErrors: [String] = []
 
   init(
     frame: CGRect,
@@ -120,6 +122,10 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
 
   private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
+    case "ready":
+      isDartHandlerReady = true
+      flushPendingProtocolErrors()
+      result(nil)
     case "updateProps":
       guard let payload = call.arguments as? [String: Any] else {
         result(FlutterError(code: "invalid_args", message: "Expected update payload.", details: nil))
@@ -148,6 +154,8 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
 
   private func dispose() {
     channel.setMethodCallHandler(nil)
+    pendingProtocolErrors.removeAll()
+    isDartHandlerReady = false
     component?.dispose()
     component = nil
   }
@@ -169,7 +177,20 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
 
   private func reportProtocolError(_ message: String) {
     NSLog("[NativeGlass] %@", message)
-    eventSink?.send("onProtocolError", arguments: ["message": message])
+    if isDartHandlerReady {
+      eventSink?.send("onProtocolError", arguments: ["message": message])
+    } else {
+      pendingProtocolErrors.append(message)
+    }
+  }
+
+  private func flushPendingProtocolErrors() {
+    guard isDartHandlerReady else { return }
+    let messages = pendingProtocolErrors
+    pendingProtocolErrors.removeAll()
+    for message in messages {
+      eventSink?.send("onProtocolError", arguments: ["message": message])
+    }
   }
 
   private static func schemaVersion(in payload: [String: Any]?) -> Int? {

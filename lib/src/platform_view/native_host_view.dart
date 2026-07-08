@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -97,6 +99,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
       widget.onEvent?.call(call);
     });
     _channel = channel;
+    _notifyNativeHandlerReady(channel);
 
     final pendingProps = _pendingProps;
     if (pendingProps != null) {
@@ -112,6 +115,10 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
       _isVisible,
       warnWhenTooManyPlatformViews: widget.warnWhenTooManyPlatformViews,
     );
+  }
+
+  void _notifyNativeHandlerReady(MethodChannel channel) {
+    unawaited(channel.invokeMethod<void>('ready').catchError((Object _) {}));
   }
 
   void _syncProps(Map<String, Object?> nextProps) {
