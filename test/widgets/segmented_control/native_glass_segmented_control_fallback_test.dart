@@ -62,6 +62,29 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('does not clip the Material fallback height', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: NativeGlassSegmentedControl(
+            selectedIndex: 0,
+            renderMode: NativeGlassRenderMode.flutter,
+            onSegmentSelected: (_) {},
+            segments: const [
+              NativeGlassSegment(label: 'Day'),
+              NativeGlassSegment(label: 'Week'),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      tester.getSize(find.byType(SegmentedButton<int>)).height,
+      greaterThan(36),
+    );
+  });
 }
 
 void _ignoreSelection(int index) {}

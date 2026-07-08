@@ -37,8 +37,8 @@ class _NativeGlassSegmentedControlState
 
   @override
   Widget build(BuildContext context) {
-    final fallback = SizedBox(
-      height: widget.height,
+    final fallback = ConstrainedBox(
+      constraints: BoxConstraints(minHeight: widget.height),
       child: FallbackNativeGlassSegmentedControl(
         selectedIndex: widget.selectedIndex,
         onSegmentSelected: widget.onSegmentSelected,
