@@ -6,7 +6,7 @@ void main() {
     await tester.pumpWidget(const NativeGlassExampleApp());
 
     expect(find.text('Showcase'), findsWidgets);
-    expect(find.text('Phase 2 Showcase'), findsOneWidget);
+    expect(find.text('Phase 3 Showcase'), findsOneWidget);
 
     await tester.tap(find.text('Tab Bar').last);
     await tester.pumpAndSettle();
@@ -14,7 +14,8 @@ void main() {
 
     await tester.tap(find.text('Surfaces').last);
     await tester.pumpAndSettle();
-    expect(find.text('Fallback Surfaces Demo'), findsOneWidget);
+    expect(find.text('Controls And Surfaces Demo'), findsOneWidget);
+    expect(find.text('Week'), findsOneWidget);
 
     await tester.tap(find.text('Policy').last);
     await tester.pumpAndSettle();

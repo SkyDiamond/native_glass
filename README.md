@@ -9,6 +9,7 @@ It is designed as a broader, performance-aware package rather than a native-ever
 Use the Native Renderer for:
 
 - System Surfaces such as tab bars and navigation bars.
+- Promoted leaf controls such as segmented controls.
 - A small number of native views per Screen.
 - UI where UIKit behavior matters.
 
@@ -22,13 +23,14 @@ Use Flutter Fallback for:
 ## Current Widgets
 
 - `NativeGlassNavigationBar`
+- `NativeGlassSegmentedControl`
 - `NativeGlassTabBar`
 - `NativeGlassButton`
 - `NativeGlassContainer`
 - `NativeGlassTheme`
 - `NativeGlassAvailabilityBuilder`
 
-`NativeGlassNavigationBar` and `NativeGlassTabBar` can use the Native Renderer on supported iOS paths. `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback widgets.
+`NativeGlassNavigationBar`, `NativeGlassSegmentedControl`, and `NativeGlassTabBar` can use the Native Renderer on supported iOS paths. `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback widgets.
 
 ## Basic Usage
 
@@ -72,6 +74,22 @@ Scaffold(
 )
 ```
 
+As a promoted native leaf control:
+
+```dart
+NativeGlassSegmentedControl(
+  selectedIndex: index,
+  onSegmentSelected: (next) {
+    setState(() => index = next);
+  },
+  segments: const [
+    NativeGlassSegment(label: 'Day'),
+    NativeGlassSegment(label: 'Week'),
+    NativeGlassSegment(label: 'Month'),
+  ],
+)
+```
+
 For Flutter Fallback icons:
 
 ```dart
@@ -101,6 +119,6 @@ Liquid Glass means Apple's native iOS 26+ behavior only. Older iOS versions may 
 
 - Native Renderer uses PlatformViews and can have composition limitations with Flutter overlays and effects.
 - `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback.
-- Flutter `IconData` is not supported by the Native Renderer tab bar in the MVP. Use `sfSymbol` or `nativeAsset` for native tab bar icons.
+- Flutter `IconData` is not supported by Native Renderer components. Use `sfSymbol` or `nativeAsset` for native icons.
 - PlatformView Budget diagnostics warn; they do not automatically force fallback.
 - iOS integration testing currently starts with manual/device or simulator verification.

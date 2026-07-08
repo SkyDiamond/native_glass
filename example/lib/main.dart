@@ -15,6 +15,7 @@ class NativeGlassExampleApp extends StatefulWidget {
 class _NativeGlassExampleAppState extends State<NativeGlassExampleApp> {
   var _pageIndex = 0;
   var _demoSelectedIndex = 0;
+  var _periodIndex = 0;
   var _renderMode = NativeGlassRenderMode.auto;
 
   @override
@@ -40,9 +41,13 @@ class _NativeGlassExampleAppState extends State<NativeGlassExampleApp> {
       _ShowcaseDemo(
         renderMode: _renderMode,
         selectedIndex: _demoSelectedIndex,
+        periodIndex: _periodIndex,
         onRenderModeChanged: (mode) => setState(() => _renderMode = mode),
         onDestinationSelected: (index) {
           setState(() => _demoSelectedIndex = index);
+        },
+        onPeriodSelected: (index) {
+          setState(() => _periodIndex = index);
         },
       ),
       _TabBarDemo(
@@ -52,7 +57,13 @@ class _NativeGlassExampleAppState extends State<NativeGlassExampleApp> {
           setState(() => _demoSelectedIndex = index);
         },
       ),
-      const _FallbackSurfacesDemo(),
+      _ControlsAndSurfacesDemo(
+        renderMode: _renderMode,
+        periodIndex: _periodIndex,
+        onPeriodSelected: (index) {
+          setState(() => _periodIndex = index);
+        },
+      ),
       _RenderPolicyDemo(
         renderMode: _renderMode,
         onChanged: (mode) => setState(() => _renderMode = mode),
@@ -131,19 +142,23 @@ class _ShowcaseDemo extends StatelessWidget {
   const _ShowcaseDemo({
     required this.renderMode,
     required this.selectedIndex,
+    required this.periodIndex,
     required this.onRenderModeChanged,
     required this.onDestinationSelected,
+    required this.onPeriodSelected,
   });
 
   final NativeGlassRenderMode renderMode;
   final int selectedIndex;
+  final int periodIndex;
   final ValueChanged<NativeGlassRenderMode> onRenderModeChanged;
   final ValueChanged<int> onDestinationSelected;
+  final ValueChanged<int> onPeriodSelected;
 
   @override
   Widget build(BuildContext context) {
     return _DemoPage(
-      title: 'Phase 2 Showcase',
+      title: 'Phase 3 Showcase',
       children: [
         NativeGlassAvailabilityBuilder(
           builder: (context, availability) {
@@ -169,6 +184,13 @@ class _ShowcaseDemo extends StatelessWidget {
         NativeGlassButton(
           onPressed: () {},
           child: const Text('Fallback button'),
+        ),
+        const SizedBox(height: 24),
+        NativeGlassSegmentedControl(
+          selectedIndex: periodIndex,
+          renderMode: renderMode,
+          onSegmentSelected: onPeriodSelected,
+          segments: _periodSegments,
         ),
         const SizedBox(height: 24),
         NativeGlassTabBar(
@@ -220,14 +242,33 @@ class _TabBarDemo extends StatelessWidget {
   }
 }
 
-class _FallbackSurfacesDemo extends StatelessWidget {
-  const _FallbackSurfacesDemo();
+class _ControlsAndSurfacesDemo extends StatelessWidget {
+  const _ControlsAndSurfacesDemo({
+    required this.renderMode,
+    required this.periodIndex,
+    required this.onPeriodSelected,
+  });
+
+  final NativeGlassRenderMode renderMode;
+  final int periodIndex;
+  final ValueChanged<int> onPeriodSelected;
 
   @override
   Widget build(BuildContext context) {
     return _DemoPage(
-      title: 'Fallback Surfaces Demo',
+      title: 'Controls And Surfaces Demo',
       children: [
+        const Text(
+          'NativeGlassSegmentedControl earns a native leaf-control path.',
+        ),
+        const SizedBox(height: 16),
+        NativeGlassSegmentedControl(
+          selectedIndex: periodIndex,
+          renderMode: renderMode,
+          onSegmentSelected: onPeriodSelected,
+          segments: _periodSegments,
+        ),
+        const SizedBox(height: 24),
         const NativeGlassContainer(
           padding: EdgeInsets.all(20),
           child: Text('Blurred fallback container'),
@@ -393,5 +434,14 @@ const _demoDestinations = [
     label: 'Search',
     icon: NativeGlassIcon.flutterIcon(Icons.search),
     badge: NativeGlassBadge.dot(),
+  ),
+];
+
+const _periodSegments = [
+  NativeGlassSegment(label: 'Day', icon: NativeGlassIcon.sfSymbol('sun.max')),
+  NativeGlassSegment(label: 'Week', icon: NativeGlassIcon.sfSymbol('calendar')),
+  NativeGlassSegment(
+    label: 'Month',
+    icon: NativeGlassIcon.sfSymbol('chart.bar'),
   ),
 ];
