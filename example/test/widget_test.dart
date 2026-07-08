@@ -23,5 +23,13 @@ void main() {
     await tester.tap(find.text('Diagnostics').last);
     await tester.pumpAndSettle();
     expect(find.text('Diagnostics Demo'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Policy').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Render Policy Demo'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Diagnostics').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Diagnostics Demo'), findsOneWidget);
   });
 }

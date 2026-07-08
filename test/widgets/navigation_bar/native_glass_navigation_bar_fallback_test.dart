@@ -45,6 +45,31 @@ void main() {
 
     expect(actions, ['back', 'search']);
   });
+
+  testWidgets('renders text fallback actions when no icon is provided', (
+    tester,
+  ) async {
+    final actions = <String>[];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          appBar: NativeGlassNavigationBar(
+            title: 'Portfolio',
+            renderMode: NativeGlassRenderMode.flutter,
+            trailingActions: const [
+              NativeGlassNavigationAction(id: 'done', label: 'Done'),
+            ],
+            onActionSelected: actions.add,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Done'));
+
+    expect(actions, ['done']);
+  });
 }
 
 void _ignoreAction(String id) {}
