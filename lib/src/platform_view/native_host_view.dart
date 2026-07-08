@@ -43,6 +43,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   Map<String, Object?>? _pendingProps;
   NativeGlassRendererRegistration? _diagnosticsRegistration;
   var _isVisible = true;
+  bool? _lastNativeVisibility;
 
   @override
   void initState() {
@@ -100,6 +101,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
     });
     _channel = channel;
     _notifyNativeHandlerReady(channel);
+    _syncNativeVisibility(force: true);
 
     final pendingProps = _pendingProps;
     if (pendingProps != null) {
@@ -116,10 +118,23 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
       _isVisible,
       warnWhenTooManyPlatformViews: widget.warnWhenTooManyPlatformViews,
     );
+    _syncNativeVisibility();
   }
 
   void _notifyNativeHandlerReady(MethodChannel channel) {
     unawaited(channel.invokeMethod<void>('ready').catchError((Object _) {}));
+  }
+
+  void _syncNativeVisibility({bool force = false}) {
+    final channel = _channel;
+    if (channel == null) return;
+    if (!force && _lastNativeVisibility == _isVisible) return;
+    _lastNativeVisibility = _isVisible;
+    unawaited(
+      channel
+          .invokeMethod<void>('setVisible', {'visible': _isVisible})
+          .catchError((Object _) {}),
+    );
   }
 
   void _syncProps(Map<String, Object?> nextProps) {

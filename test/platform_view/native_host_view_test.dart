@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:native_glass/src/adaptive/render_policy.dart';
 import 'package:native_glass/src/diagnostics/diagnostics.dart';
@@ -156,4 +156,111 @@ void main() {
       debugDefaultTargetPlatformOverride = previousTargetPlatform;
     }
   });
+
+  testWidgets('does not count inactive route hosts as visible budget views', (
+    tester,
+  ) async {
+    final previousTargetPlatform = debugDefaultTargetPlatformOverride;
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+
+    try {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: const _NativeHostRoute(),
+          routes: {'/next': (_) => const SizedBox.shrink()},
+        ),
+      );
+
+      final view = tester.widget<UiKitView>(find.byType(UiKitView));
+      view.onPlatformViewCreated?.call(43);
+
+      expect(NativeGlassDiagnostics.activeNativeRendererCount, 1);
+      expect(NativeGlassDiagnostics.visibleNativeRendererCount, 1);
+
+      tester.state<NavigatorState>(find.byType(Navigator)).pushNamed('/next');
+      await tester.pumpAndSettle();
+
+      expect(NativeGlassDiagnostics.activeNativeRendererCount, 1);
+      expect(NativeGlassDiagnostics.visibleNativeRendererCount, 0);
+    } finally {
+      debugDefaultTargetPlatformOverride = previousTargetPlatform;
+    }
+  });
+
+  testWidgets('sends native visibility updates to the host view', (
+    tester,
+  ) async {
+    final previousTargetPlatform = debugDefaultTargetPlatformOverride;
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    final calls = <MethodCall>[];
+    final messenger = tester.binding.defaultBinaryMessenger;
+    const channel = MethodChannel('native_glass/view_44');
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      calls.add(call);
+      return null;
+    });
+
+    Future<void> pumpHost({required bool visible}) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: TickerMode(
+            enabled: visible,
+            child: const SizedBox(
+              width: 100,
+              height: 80,
+              child: NativeGlassNativeHostView(
+                creationParams: {
+                  'schema_version': 1,
+                  'component': 'placeholder',
+                  'props': <String, Object?>{},
+                },
+                props: <String, Object?>{},
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    try {
+      await pumpHost(visible: true);
+      final view = tester.widget<UiKitView>(find.byType(UiKitView));
+      view.onPlatformViewCreated?.call(44);
+      await tester.pump();
+      calls.clear();
+
+      await pumpHost(visible: false);
+      await tester.pump();
+
+      final setVisibleCalls = calls.where(
+        (call) => call.method == 'setVisible',
+      );
+      expect(setVisibleCalls, hasLength(1));
+      expect(setVisibleCalls.single.arguments, {'visible': false});
+    } finally {
+      messenger.setMockMethodCallHandler(channel, null);
+      debugDefaultTargetPlatformOverride = previousTargetPlatform;
+    }
+  });
+}
+
+class _NativeHostRoute extends StatelessWidget {
+  const _NativeHostRoute();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 100,
+      height: 80,
+      child: NativeGlassNativeHostView(
+        creationParams: {
+          'schema_version': 1,
+          'component': 'placeholder',
+          'props': <String, Object?>{},
+        },
+        props: <String, Object?>{},
+      ),
+    );
+  }
 }
