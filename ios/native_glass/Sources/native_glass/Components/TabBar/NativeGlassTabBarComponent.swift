@@ -4,6 +4,7 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
   private let controller: UITabBarController
   private let eventSink: NativeGlassEventSink
   private var props: NativeGlassTabBarProps?
+  private var tapTargets: [UIButton] = []
   private var currentAppearanceIsDark = false
 
   var rootView: UIView {
@@ -47,6 +48,7 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
 
   func dispose() {
     controller.delegate = nil
+    removeTapTargets()
     controller.setViewControllers([], animated: false)
   }
 
@@ -97,6 +99,7 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
 
     controller.setViewControllers(viewControllers, animated: false)
     updateSelectedIndex()
+    rebuildTapTargets()
   }
 
   private func updateItemsInPlace() {
@@ -116,6 +119,8 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
       viewController.tabBarItem.selectedImage = selectedImage(for: destination)
       viewController.tabBarItem.badgeValue = destination.badge?.value
     }
+
+    rebuildTapTargets()
   }
 
   private func updateSelectedIndex() {
@@ -137,6 +142,67 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
     return item
   }
 
+  private func rebuildTapTargets() {
+    removeTapTargets()
+
+    guard
+      let props,
+      !props.destinations.isEmpty
+    else {
+      return
+    }
+
+    var previousTarget: UIButton?
+    for (index, destination) in props.destinations.enumerated() {
+      let button = UIButton(type: .custom)
+      button.tag = index
+      button.backgroundColor = .clear
+      button.accessibilityLabel = destination.label
+      button.addTarget(
+        self,
+        action: #selector(handleTapTarget(_:)),
+        for: .touchUpInside
+      )
+      button.translatesAutoresizingMaskIntoConstraints = false
+      controller.tabBar.addSubview(button)
+
+      NSLayoutConstraint.activate([
+        button.topAnchor.constraint(equalTo: controller.tabBar.topAnchor),
+        button.bottomAnchor.constraint(equalTo: controller.tabBar.bottomAnchor),
+        button.widthAnchor.constraint(
+          equalTo: controller.tabBar.widthAnchor,
+          multiplier: 1.0 / CGFloat(props.destinations.count)
+        ),
+      ])
+
+      if let previousTarget {
+        NSLayoutConstraint.activate([
+          button.leadingAnchor.constraint(equalTo: previousTarget.trailingAnchor),
+        ])
+      } else {
+        NSLayoutConstraint.activate([
+          button.leadingAnchor.constraint(equalTo: controller.tabBar.leadingAnchor),
+        ])
+      }
+
+      if index == props.destinations.count - 1 {
+        NSLayoutConstraint.activate([
+          button.trailingAnchor.constraint(equalTo: controller.tabBar.trailingAnchor),
+        ])
+      }
+
+      tapTargets.append(button)
+      previousTarget = button
+    }
+  }
+
+  private func removeTapTargets() {
+    for target in tapTargets {
+      target.removeFromSuperview()
+    }
+    tapTargets.removeAll()
+  }
+
   private func selectedImage(for destination: NativeGlassTabBarProps.Destination) -> UIImage? {
     guard let selectedIcon = destination.selectedIcon else { return nil }
     let image = selectedIcon.image()
@@ -151,6 +217,17 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
     didSelect viewController: UIViewController
   ) {
     let index = viewController.tabBarItem.tag
+    sendSelection(index: index)
+  }
+
+  @objc private func handleTapTarget(_ sender: UIButton) {
+    let index = sender.tag
+    controller.selectedIndex = index
+    sendSelection(index: index)
+  }
+
+  private func sendSelection(index: Int) {
+    guard let props, index >= 0 && index < props.destinations.count else { return }
     eventSink.send("onDestinationSelected", arguments: ["index": index])
   }
 }
