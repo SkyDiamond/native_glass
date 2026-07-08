@@ -127,6 +127,12 @@ NativeGlassAvailabilityBuilder(
 
 Liquid Glass means Apple's native iOS 26+ behavior only. Older iOS versions may still use standard native UIKit rendering, but they are not reported as Liquid Glass.
 
+## Diagnostics
+
+Diagnostics are enabled by default in debug builds and can report render decisions, fallback reasons, active and visible Native Renderer counts, prop update counts, and structural rebuild counts.
+
+The PlatformView Budget warning threshold is 6 visible Native Renderer views. This warning is diagnostic only; it does not force Flutter Fallback.
+
 ## Known Limitations
 
 - Native Renderer uses PlatformViews and can have composition limitations with Flutter overlays and effects.
