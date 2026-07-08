@@ -110,7 +110,8 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
 
   void _syncDiagnosticsVisibility() {
     final route = ModalRoute.of(context);
-    _isVisible = TickerMode.of(context) && (route?.isCurrent ?? true);
+    _isVisible =
+        TickerMode.valuesOf(context).enabled && (route?.isCurrent ?? true);
     _diagnosticsRegistration?.setVisible(
       _isVisible,
       warnWhenTooManyPlatformViews: widget.warnWhenTooManyPlatformViews,
