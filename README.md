@@ -131,7 +131,7 @@ Liquid Glass means Apple's native iOS 26+ behavior only. Older iOS versions may 
 
 Diagnostics are enabled by default in debug builds and can report render decisions, fallback reasons, active and visible Native Renderer counts, prop update counts, and structural rebuild counts.
 
-The PlatformView Budget warning threshold is 6 visible Native Renderer views. This warning is diagnostic only; it does not force Flutter Fallback.
+The PlatformView Budget warning threshold is 6 visible Native Renderer views. Visibility follows Flutter route and `TickerMode` signals so retained inactive screens are not treated as visible budget pressure. This warning is diagnostic only; it does not force Flutter Fallback.
 
 ## Known Limitations
 
