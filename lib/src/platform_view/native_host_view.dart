@@ -40,6 +40,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   Map<String, Object?>? _previousProps;
   Map<String, Object?>? _pendingProps;
   NativeGlassRendererRegistration? _diagnosticsRegistration;
+  var _isVisible = true;
 
   @override
   void initState() {
@@ -48,11 +49,18 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncDiagnosticsVisibility();
+  }
+
+  @override
   void didUpdateWidget(NativeGlassNativeHostView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.structuralSignature != widget.structuralSignature) {
       NativeGlassDiagnostics.recordStructuralRebuild();
     }
+    _syncDiagnosticsVisibility();
     _syncProps(widget.props);
   }
 
@@ -80,10 +88,10 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   }
 
   void _onPlatformViewCreated(int id) {
-    _diagnosticsRegistration ??=
-        NativeGlassDiagnostics.registerNativeRenderer(
-          warnWhenTooManyPlatformViews: widget.warnWhenTooManyPlatformViews,
-        );
+    _diagnosticsRegistration ??= NativeGlassDiagnostics.registerNativeRenderer(
+      visible: _isVisible,
+      warnWhenTooManyPlatformViews: widget.warnWhenTooManyPlatformViews,
+    );
     final channel = MethodChannel('native_glass/view_$id');
     channel.setMethodCallHandler((call) async {
       widget.onEvent?.call(call);
@@ -95,6 +103,15 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
       _pendingProps = null;
       _syncProps(pendingProps);
     }
+  }
+
+  void _syncDiagnosticsVisibility() {
+    final route = ModalRoute.of(context);
+    _isVisible = TickerMode.of(context) && (route?.isCurrent ?? true);
+    _diagnosticsRegistration?.setVisible(
+      _isVisible,
+      warnWhenTooManyPlatformViews: widget.warnWhenTooManyPlatformViews,
+    );
   }
 
   void _syncProps(Map<String, Object?> nextProps) {
