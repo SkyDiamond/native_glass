@@ -78,6 +78,7 @@ class _NativeGlassTabBarState extends State<NativeGlassTabBar> {
             props: props.toProps(),
             structuralSignature: widget.destinations.length,
             warnWhenTooManyPlatformViews:
+                theme.config.diagnosticsEnabled &&
                 theme.config.warnWhenTooManyPlatformViews,
             onEvent: (call) {
               if (call.method != 'onDestinationSelected') return;

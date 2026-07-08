@@ -88,6 +88,7 @@ class _NativeGlassNavigationBarState extends State<NativeGlassNavigationBar> {
               widget.trailingActions.length,
             ),
             warnWhenTooManyPlatformViews:
+                theme.config.diagnosticsEnabled &&
                 theme.config.warnWhenTooManyPlatformViews,
             onEvent: (call) {
               if (call.method != 'onActionSelected') return;

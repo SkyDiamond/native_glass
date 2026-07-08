@@ -40,14 +40,32 @@ class _NativeGlassButtonState extends State<NativeGlassButton> {
   @override
   Widget build(BuildContext context) {
     final fallback = _buildFallback(context);
-    final nativeLabel = _nativeLabelFor(widget.child);
-    if (nativeLabel == null) return fallback;
-
     final theme = NativeGlassTheme.of(context);
-    final props = NativeGlassButtonProps(
-      label: nativeLabel,
-      enabled: _enabled,
-    );
+    final nativeLabel = _nativeLabelFor(widget.child);
+    if (nativeLabel == null) {
+      return FutureBuilder<NativeGlassAvailability>(
+        future: NativeGlassAvailability.check(),
+        builder: (context, snapshot) {
+          final availability = snapshot.data;
+          if (availability == null) return fallback;
+
+          final decision = resolveNativeGlassRenderPolicy(
+            component: NativeGlassComponentRole.leafControl,
+            requestedMode: widget.renderMode,
+            config: theme.config,
+            availability: availability,
+          );
+          _scheduleRenderDecisionDiagnostic(
+            decision,
+            theme.config.diagnosticsEnabled,
+          );
+          enforceNativeGlassFailureBehavior(decision);
+          return fallback;
+        },
+      );
+    }
+
+    final props = NativeGlassButtonProps(label: nativeLabel, enabled: _enabled);
 
     return FutureBuilder<NativeGlassAvailability>(
       future: NativeGlassAvailability.check(),
@@ -77,6 +95,7 @@ class _NativeGlassButtonState extends State<NativeGlassButton> {
             creationParams: props.toCreationParams(),
             props: props.toProps(),
             warnWhenTooManyPlatformViews:
+                theme.config.diagnosticsEnabled &&
                 theme.config.warnWhenTooManyPlatformViews,
             onEvent: (call) {
               if (!_enabled || call.method != 'onPressed') return;
