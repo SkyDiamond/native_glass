@@ -45,6 +45,12 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
     eventSink: NativeGlassEventSink
   ) -> NativeGlassComponent {
     switch kind {
+    case .button:
+      return NativeGlassButtonComponent(
+        frame: frame,
+        props: props,
+        eventSink: eventSink
+      )
     case .placeholder:
       return NativeGlassPlaceholderComponent(
         frame: frame,

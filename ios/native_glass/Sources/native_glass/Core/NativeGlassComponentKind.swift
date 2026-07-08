@@ -1,4 +1,5 @@
 enum NativeGlassComponentKind: String {
+  case button
   case placeholder
   case navigationBar
   case segmentedControl
