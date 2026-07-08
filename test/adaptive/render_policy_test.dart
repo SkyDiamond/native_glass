@@ -42,6 +42,22 @@ void main() {
     );
   });
 
+  test('auto uses native renderer for promoted leaf controls', () {
+    final decision = resolveNativeGlassRenderPolicy(
+      component: NativeGlassComponentRole.nativeLeafControl,
+      requestedMode: null,
+      config: const NativeGlassConfig(),
+      availability: const NativeGlassAvailability(
+        isIOS: true,
+        supportsNativeRenderer: true,
+        supportsLiquidGlass: true,
+      ),
+    );
+
+    expect(decision.renderer, NativeGlassRenderer.nativeRenderer);
+    expect(decision.fallbackReason, NativeGlassFallbackReason.none);
+  });
+
   test(
     'native requests fall back safely when native renderer is unavailable',
     () {

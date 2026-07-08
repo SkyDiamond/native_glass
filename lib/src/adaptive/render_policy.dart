@@ -19,7 +19,12 @@ enum NativeGlassFallbackReason {
 
 enum NativeGlassRenderer { nativeRenderer, flutterFallback }
 
-enum NativeGlassComponentRole { systemSurface, leafControl, decorativeSurface }
+enum NativeGlassComponentRole {
+  systemSurface,
+  nativeLeafControl,
+  leafControl,
+  decorativeSurface,
+}
 
 class NativeGlassRenderDecision {
   const NativeGlassRenderDecision({
@@ -62,7 +67,9 @@ NativeGlassRenderDecision resolveNativeGlassRenderPolicy({
     );
   }
 
-  final nativeCandidate = component == NativeGlassComponentRole.systemSurface;
+  final nativeCandidate =
+      component == NativeGlassComponentRole.systemSurface ||
+      component == NativeGlassComponentRole.nativeLeafControl;
   if (!nativeCandidate) {
     final reason = mode == NativeGlassRenderMode.native
         ? NativeGlassFallbackReason.componentNativeUnsupported
