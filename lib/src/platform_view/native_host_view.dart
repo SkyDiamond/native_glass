@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -6,6 +7,10 @@ import '../diagnostics/diagnostics.dart';
 import 'prop_diff.dart';
 
 typedef NativeGlassViewEventHandler = void Function(MethodCall call);
+
+final _nativeGlassGestureRecognizers = <Factory<OneSequenceGestureRecognizer>>{
+  Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+};
 
 class NativeGlassNativeHostView extends StatefulWidget {
   const NativeGlassNativeHostView({
@@ -62,6 +67,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
       viewType: NativeGlassNativeHostView.viewType,
       creationParams: widget.creationParams,
       creationParamsCodec: const StandardMessageCodec(),
+      gestureRecognizers: _nativeGlassGestureRecognizers,
       onPlatformViewCreated: _onPlatformViewCreated,
     );
   }
