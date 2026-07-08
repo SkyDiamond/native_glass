@@ -5,6 +5,7 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
   private let eventSink: NativeGlassEventSink
   private var props: NativeGlassTabBarProps?
   private var tapTargets: [UIButton] = []
+  private var tapTargetConstraints: [NSLayoutConstraint] = []
   private var currentAppearanceIsDark = false
 
   var rootView: UIView {
@@ -166,38 +167,38 @@ final class NativeGlassTabBarComponent: NSObject, NativeGlassComponent, UITabBar
       button.translatesAutoresizingMaskIntoConstraints = false
       controller.tabBar.addSubview(button)
 
-      NSLayoutConstraint.activate([
+      var constraints = [
         button.topAnchor.constraint(equalTo: controller.tabBar.topAnchor),
         button.bottomAnchor.constraint(equalTo: controller.tabBar.bottomAnchor),
         button.widthAnchor.constraint(
           equalTo: controller.tabBar.widthAnchor,
           multiplier: 1.0 / CGFloat(props.destinations.count)
         ),
-      ])
+      ]
 
       if let previousTarget {
-        NSLayoutConstraint.activate([
-          button.leadingAnchor.constraint(equalTo: previousTarget.trailingAnchor),
-        ])
+        constraints.append(button.leadingAnchor.constraint(equalTo: previousTarget.trailingAnchor))
       } else {
-        NSLayoutConstraint.activate([
-          button.leadingAnchor.constraint(equalTo: controller.tabBar.leadingAnchor),
-        ])
+        constraints.append(button.leadingAnchor.constraint(equalTo: controller.tabBar.leadingAnchor))
       }
 
       if index == props.destinations.count - 1 {
-        NSLayoutConstraint.activate([
-          button.trailingAnchor.constraint(equalTo: controller.tabBar.trailingAnchor),
-        ])
+        constraints.append(button.trailingAnchor.constraint(equalTo: controller.tabBar.trailingAnchor))
       }
 
+      NSLayoutConstraint.activate(constraints)
+      tapTargetConstraints.append(contentsOf: constraints)
       tapTargets.append(button)
       previousTarget = button
     }
   }
 
   private func removeTapTargets() {
+    NSLayoutConstraint.deactivate(tapTargetConstraints)
+    tapTargetConstraints.removeAll()
+
     for target in tapTargets {
+      target.removeTarget(self, action: nil, for: .allEvents)
       target.removeFromSuperview()
     }
     tapTargets.removeAll()
