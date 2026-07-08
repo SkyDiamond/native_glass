@@ -2,9 +2,12 @@ import Flutter
 import UIKit
 
 final class NativeGlassHostView: NSObject, FlutterPlatformView {
+  private static let supportedSchemaVersion = 1
+
   private let containerView: UIView
   private let channel: FlutterMethodChannel
   private var component: NativeGlassComponent?
+  private var eventSink: NativeGlassEventSink?
 
   init(
     frame: CGRect,
@@ -24,12 +27,20 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
     super.init()
 
     let payload = args as? [String: Any]
-    let kind = NativeGlassComponentKind(
-      rawValue: payload?["component"] as? String
-    )
-    let props = payload?["props"] as? [String: Any] ?? [:]
     let eventSink = NativeGlassEventSink(channel: channel)
-    component = makeComponent(kind: kind, frame: frame, props: props, eventSink: eventSink)
+    self.eventSink = eventSink
+
+    if Self.schemaVersion(in: payload) == Self.supportedSchemaVersion {
+      let kind = NativeGlassComponentKind(
+        rawValue: payload?["component"] as? String
+      )
+      let props = payload?["props"] as? [String: Any] ?? [:]
+      component = makeComponent(kind: kind, frame: frame, props: props, eventSink: eventSink)
+    } else {
+      component = makePlaceholder(frame: frame, eventSink: eventSink)
+      reportProtocolError("Unsupported native_glass schema_version.")
+    }
+
     attachComponent()
     installMethodHandler()
   }
@@ -78,6 +89,17 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
     }
   }
 
+  private func makePlaceholder(
+    frame: CGRect,
+    eventSink: NativeGlassEventSink
+  ) -> NativeGlassComponent {
+    return NativeGlassPlaceholderComponent(
+      frame: frame,
+      props: [:],
+      eventSink: eventSink
+    )
+  }
+
   private func attachComponent() {
     guard let rootView = component?.rootView else { return }
     rootView.translatesAutoresizingMaskIntoConstraints = false
@@ -103,6 +125,11 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
         result(FlutterError(code: "invalid_args", message: "Expected update payload.", details: nil))
         return
       }
+      guard Self.schemaVersion(in: payload) == Self.supportedSchemaVersion else {
+        replaceWithPlaceholder(reason: "Unsupported native_glass update schema_version.")
+        result(nil)
+        return
+      }
       let props = payload["props"] as? [String: Any] ?? [:]
       let diff = payload["diff"] as? [String: Any] ?? [:]
       component?.update(props: props, diff: diff)
@@ -123,5 +150,29 @@ final class NativeGlassHostView: NSObject, FlutterPlatformView {
     channel.setMethodCallHandler(nil)
     component?.dispose()
     component = nil
+  }
+
+  private func replaceWithPlaceholder(reason: String) {
+    let oldRootView = component?.rootView
+    component?.dispose()
+    oldRootView?.removeFromSuperview()
+
+    guard let eventSink else {
+      component = nil
+      return
+    }
+
+    component = makePlaceholder(frame: containerView.bounds, eventSink: eventSink)
+    attachComponent()
+    reportProtocolError(reason)
+  }
+
+  private func reportProtocolError(_ message: String) {
+    NSLog("[NativeGlass] %@", message)
+    eventSink?.send("onProtocolError", arguments: ["message": message])
+  }
+
+  private static func schemaVersion(in payload: [String: Any]?) -> Int? {
+    return payload?["schema_version"] as? Int
   }
 }
