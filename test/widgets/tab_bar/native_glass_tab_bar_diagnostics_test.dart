@@ -69,6 +69,51 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.textContaining('Events:'), findsOneWidget);
   });
+
+  testWidgets('enforces debug throws for explicit native failures', (
+    tester,
+  ) async {
+    NativeGlassAvailability.debugCheckOverride = () async {
+      return const NativeGlassAvailability(
+        isIOS: false,
+        supportsNativeRenderer: false,
+        supportsLiquidGlass: false,
+        fallbackReason: NativeGlassFallbackReason.unsupportedPlatform,
+      );
+    };
+
+    await tester.pumpWidget(
+      NativeGlassTheme(
+        data: const NativeGlassThemeData(
+          config: NativeGlassConfig(
+            nativeFailureBehavior: NativeGlassNativeFailureBehavior.throwInDebug,
+          ),
+        ),
+        child: MaterialApp(
+          home: Scaffold(
+            bottomNavigationBar: NativeGlassTabBar(
+              selectedIndex: 0,
+              renderMode: NativeGlassRenderMode.native,
+              onDestinationSelected: (_) {},
+              destinations: const [
+                NativeGlassDestination(
+                  label: 'Home',
+                  icon: NativeGlassIcon.flutterIcon(Icons.home_outlined),
+                ),
+                NativeGlassDestination(
+                  label: 'Search',
+                  icon: NativeGlassIcon.flutterIcon(Icons.search),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isA<StateError>());
+  });
 }
 
 class _DiagnosticsSetStateHarness extends StatefulWidget {

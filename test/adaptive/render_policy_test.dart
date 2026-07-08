@@ -101,4 +101,40 @@ void main() {
       expect(decision.shouldThrowInDebug, isTrue);
     },
   );
+
+  test('enforces throwInDebug decisions in debug tests', () {
+    const decision = NativeGlassRenderDecision(
+      renderer: NativeGlassRenderer.flutterFallback,
+      requestedMode: NativeGlassRenderMode.native,
+      fallbackReason: NativeGlassFallbackReason.unsupportedPlatform,
+      supportsNativeRenderer: false,
+      supportsLiquidGlass: false,
+      shouldAssertInDebug: false,
+      shouldThrowInDebug: true,
+      diagnosticMessage: 'Native Renderer is unavailable.',
+    );
+
+    expect(
+      () => enforceNativeGlassFailureBehavior(decision),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('enforces assertInDebug decisions in debug tests', () {
+    const decision = NativeGlassRenderDecision(
+      renderer: NativeGlassRenderer.flutterFallback,
+      requestedMode: NativeGlassRenderMode.native,
+      fallbackReason: NativeGlassFallbackReason.unsupportedPlatform,
+      supportsNativeRenderer: false,
+      supportsLiquidGlass: false,
+      shouldAssertInDebug: true,
+      shouldThrowInDebug: false,
+      diagnosticMessage: 'Native Renderer is unavailable.',
+    );
+
+    expect(
+      () => enforceNativeGlassFailureBehavior(decision),
+      throwsA(isA<AssertionError>()),
+    );
+  });
 }

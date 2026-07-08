@@ -65,6 +65,7 @@ class _NativeGlassButtonState extends State<NativeGlassButton> {
           decision,
           theme.config.diagnosticsEnabled,
         );
+        enforceNativeGlassFailureBehavior(decision);
 
         if (decision.renderer == NativeGlassRenderer.flutterFallback) {
           return fallback;

@@ -65,6 +65,7 @@ class _NativeGlassTabBarState extends State<NativeGlassTabBar> {
           decision,
           theme.config.diagnosticsEnabled,
         );
+        enforceNativeGlassFailureBehavior(decision);
 
         if (decision.renderer == NativeGlassRenderer.flutterFallback) {
           return fallback;

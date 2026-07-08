@@ -67,6 +67,7 @@ class _NativeGlassSegmentedControlState
           decision,
           theme.config.diagnosticsEnabled,
         );
+        enforceNativeGlassFailureBehavior(decision);
 
         if (decision.renderer == NativeGlassRenderer.flutterFallback) {
           return fallback;

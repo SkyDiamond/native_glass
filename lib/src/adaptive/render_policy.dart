@@ -48,6 +48,18 @@ class NativeGlassRenderDecision {
   final String diagnosticMessage;
 }
 
+void enforceNativeGlassFailureBehavior(NativeGlassRenderDecision decision) {
+  assert(() {
+    if (decision.shouldThrowInDebug) {
+      throw StateError(decision.diagnosticMessage);
+    }
+    if (decision.shouldAssertInDebug) {
+      throw AssertionError(decision.diagnosticMessage);
+    }
+    return true;
+  }());
+}
+
 NativeGlassRenderDecision resolveNativeGlassRenderPolicy({
   required NativeGlassComponentRole component,
   required NativeGlassRenderMode? requestedMode,
