@@ -35,4 +35,44 @@ void main() {
     expect(NativeGlassDiagnostics.activeNativeRendererCount, 0);
     expect(NativeGlassDiagnostics.visibleNativeRendererCount, 0);
   });
+
+  test('tracks prop updates and structural rebuilds', () {
+    NativeGlassDiagnostics.recordPropUpdate();
+    NativeGlassDiagnostics.recordPropUpdate();
+    NativeGlassDiagnostics.recordStructuralRebuild();
+
+    expect(NativeGlassDiagnostics.propUpdateCount, 2);
+    expect(NativeGlassDiagnostics.structuralRebuildCount, 1);
+  });
+
+  test('emits a PlatformView Budget warning at six visible renderers', () {
+    final events = <NativeGlassDiagnosticEvent>[];
+    NativeGlassDiagnostics.listener = events.add;
+
+    for (var i = 0; i < 6; i += 1) {
+      NativeGlassDiagnostics.registerNativeRenderer();
+    }
+
+    expect(events, isNotEmpty);
+    expect(
+      events.last.fallbackReason,
+      NativeGlassFallbackReason.platformViewBudgetExceeded,
+    );
+    expect(events.last.visibleNativeRendererCount, 6);
+    expect(events.last.activeNativeRendererCount, 6);
+  });
+
+  test('can suppress PlatformView Budget warnings', () {
+    final events = <NativeGlassDiagnosticEvent>[];
+    NativeGlassDiagnostics.listener = events.add;
+
+    for (var i = 0; i < 6; i += 1) {
+      NativeGlassDiagnostics.registerNativeRenderer(
+        warnWhenTooManyPlatformViews: false,
+      );
+    }
+
+    expect(events, isEmpty);
+    expect(NativeGlassDiagnostics.visibleNativeRendererCount, 6);
+  });
 }

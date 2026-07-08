@@ -75,6 +75,9 @@ class _NativeGlassTabBarState extends State<NativeGlassTabBar> {
           child: NativeGlassNativeHostView(
             creationParams: props.toCreationParams(),
             props: props.toProps(),
+            structuralSignature: widget.destinations.length,
+            warnWhenTooManyPlatformViews:
+                theme.config.warnWhenTooManyPlatformViews,
             onEvent: (call) {
               if (call.method != 'onDestinationSelected') return;
               final arguments = call.arguments;

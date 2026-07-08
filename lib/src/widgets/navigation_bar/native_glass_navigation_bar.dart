@@ -82,6 +82,12 @@ class _NativeGlassNavigationBarState extends State<NativeGlassNavigationBar> {
           child: NativeGlassNativeHostView(
             creationParams: props.toCreationParams(),
             props: props.toProps(),
+            structuralSignature: (
+              widget.leadingAction != null,
+              widget.trailingActions.length,
+            ),
+            warnWhenTooManyPlatformViews:
+                theme.config.warnWhenTooManyPlatformViews,
             onEvent: (call) {
               if (call.method != 'onActionSelected') return;
               final arguments = call.arguments;

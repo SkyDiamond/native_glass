@@ -77,6 +77,9 @@ class _NativeGlassSegmentedControlState
           child: NativeGlassNativeHostView(
             creationParams: props.toCreationParams(),
             props: props.toProps(),
+            structuralSignature: widget.segments.length,
+            warnWhenTooManyPlatformViews:
+                theme.config.warnWhenTooManyPlatformViews,
             onEvent: (call) {
               if (call.method != 'onSegmentSelected') return;
               final arguments = call.arguments;

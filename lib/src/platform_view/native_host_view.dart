@@ -17,6 +17,8 @@ class NativeGlassNativeHostView extends StatefulWidget {
     super.key,
     required this.creationParams,
     required this.props,
+    this.structuralSignature,
+    this.warnWhenTooManyPlatformViews = true,
     this.onEvent,
   });
 
@@ -24,6 +26,8 @@ class NativeGlassNativeHostView extends StatefulWidget {
 
   final Map<String, Object?> creationParams;
   final Map<String, Object?> props;
+  final Object? structuralSignature;
+  final bool warnWhenTooManyPlatformViews;
   final NativeGlassViewEventHandler? onEvent;
 
   @override
@@ -46,6 +50,9 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
   @override
   void didUpdateWidget(NativeGlassNativeHostView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.structuralSignature != widget.structuralSignature) {
+      NativeGlassDiagnostics.recordStructuralRebuild();
+    }
     _syncProps(widget.props);
   }
 
@@ -74,7 +81,9 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
 
   void _onPlatformViewCreated(int id) {
     _diagnosticsRegistration ??=
-        NativeGlassDiagnostics.registerNativeRenderer();
+        NativeGlassDiagnostics.registerNativeRenderer(
+          warnWhenTooManyPlatformViews: widget.warnWhenTooManyPlatformViews,
+        );
     final channel = MethodChannel('native_glass/view_$id');
     channel.setMethodCallHandler((call) async {
       widget.onEvent?.call(call);
@@ -103,6 +112,7 @@ class _NativeGlassNativeHostViewState extends State<NativeGlassNativeHostView> {
       'props': nextProps,
       'diff': diff,
     });
+    NativeGlassDiagnostics.recordPropUpdate();
     _previousProps = nextProps;
   }
 }

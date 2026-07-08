@@ -75,6 +75,8 @@ class _NativeGlassButtonState extends State<NativeGlassButton> {
           child: NativeGlassNativeHostView(
             creationParams: props.toCreationParams(),
             props: props.toProps(),
+            warnWhenTooManyPlatformViews:
+                theme.config.warnWhenTooManyPlatformViews,
             onEvent: (call) {
               if (!_enabled || call.method != 'onPressed') return;
               widget.onPressed?.call();
