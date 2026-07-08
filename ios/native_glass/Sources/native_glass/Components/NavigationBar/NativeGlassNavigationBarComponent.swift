@@ -84,29 +84,34 @@ final class NativeGlassNavigationBarComponent: NSObject, NativeGlassComponent {
   ) -> UIBarButtonItem {
     actionIdsByTag[tag] = action.id
 
+    let button = UIButton(type: .system)
+    button.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+    button.tag = tag
+    button.accessibilityLabel = action.label
+    button.addTarget(
+      self,
+      action: #selector(handleAction(_:)),
+      for: .touchUpInside
+    )
+    button.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      button.widthAnchor.constraint(greaterThanOrEqualToConstant: 44),
+      button.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
+    ])
+
     if let image = action.icon?.image() {
-      let item = UIBarButtonItem(
-        image: image,
-        style: .plain,
-        target: self,
-        action: #selector(handleAction(_:))
+      button.setImage(
+        image.withRenderingMode(.alwaysTemplate),
+        for: .normal
       )
-      item.accessibilityLabel = action.label
-      item.tag = tag
-      return item
+    } else {
+      button.setTitle(action.label, for: .normal)
     }
 
-    let item = UIBarButtonItem(
-      title: action.label,
-      style: .plain,
-      target: self,
-      action: #selector(handleAction(_:))
-    )
-    item.tag = tag
-    return item
+    return UIBarButtonItem(customView: button)
   }
 
-  @objc private func handleAction(_ sender: UIBarButtonItem) {
+  @objc private func handleAction(_ sender: UIButton) {
     guard let id = actionIdsByTag[sender.tag] else { return }
     eventSink.send("onActionSelected", arguments: ["id": id])
   }
