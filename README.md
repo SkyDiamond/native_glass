@@ -30,7 +30,7 @@ Use Flutter Fallback for:
 - `NativeGlassTheme`
 - `NativeGlassAvailabilityBuilder`
 
-`NativeGlassNavigationBar`, `NativeGlassSegmentedControl`, and `NativeGlassTabBar` can use the Native Renderer on supported iOS paths. `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback widgets.
+`NativeGlassNavigationBar`, `NativeGlassSegmentedControl`, and `NativeGlassTabBar` can use the Native Renderer on supported iOS paths. `NativeGlassSegmentedControl` is the promoted Leaf Control for Phase 3. `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback widgets.
 
 ## Basic Usage
 
@@ -119,6 +119,7 @@ Liquid Glass means Apple's native iOS 26+ behavior only. Older iOS versions may 
 
 - Native Renderer uses PlatformViews and can have composition limitations with Flutter overlays and effects.
 - `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback.
+- General buttons, switches, and sliders are not promoted to Native Renderer in Phase 3.
 - Flutter `IconData` is not supported by Native Renderer components. Use `sfSymbol` or `nativeAsset` for native icons.
 - PlatformView Budget diagnostics warn; they do not automatically force fallback.
 - iOS integration testing currently starts with manual/device or simulator verification.
