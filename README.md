@@ -9,7 +9,7 @@ It is designed as a broader, performance-aware package rather than a native-ever
 Use the Native Renderer for:
 
 - System Surfaces such as tab bars and navigation bars.
-- Promoted leaf controls such as segmented controls.
+- Promoted leaf controls such as segmented controls and text buttons.
 - A small number of native views per Screen.
 - UI where UIKit behavior matters.
 
@@ -30,7 +30,7 @@ Use Flutter Fallback for:
 - `NativeGlassTheme`
 - `NativeGlassAvailabilityBuilder`
 
-`NativeGlassNavigationBar`, `NativeGlassSegmentedControl`, and `NativeGlassTabBar` can use the Native Renderer on supported iOS paths. `NativeGlassSegmentedControl` is the promoted Leaf Control for Phase 3. `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback widgets.
+`NativeGlassNavigationBar`, `NativeGlassSegmentedControl`, `NativeGlassTabBar`, and text-only `NativeGlassButton` instances can use the Native Renderer on supported iOS paths. `NativeGlassSegmentedControl` is the promoted Leaf Control for Phase 3. Text-only `NativeGlassButton` is the promoted Leaf Control for Phase 4. `NativeGlassButton` instances with arbitrary Flutter children and `NativeGlassContainer` stay on Flutter Fallback.
 
 ## Basic Usage
 
@@ -90,6 +90,18 @@ NativeGlassSegmentedControl(
 )
 ```
 
+As a promoted native text button:
+
+```dart
+NativeGlassButton(
+  renderMode: NativeGlassRenderMode.auto,
+  onPressed: () {
+    // Route or update state from Flutter.
+  },
+  child: const Text('Continue'),
+)
+```
+
 For Flutter Fallback icons:
 
 ```dart
@@ -118,8 +130,9 @@ Liquid Glass means Apple's native iOS 26+ behavior only. Older iOS versions may 
 ## Known Limitations
 
 - Native Renderer uses PlatformViews and can have composition limitations with Flutter overlays and effects.
-- `NativeGlassButton` and `NativeGlassContainer` are Flutter Fallback.
-- General buttons, switches, and sliders are not promoted to Native Renderer in Phase 3.
+- `NativeGlassButton` uses the Native Renderer only for text-only children. Arbitrary Flutter children stay on Flutter Fallback.
+- `NativeGlassContainer` is Flutter Fallback.
+- Switches and sliders are not promoted to Native Renderer yet.
 - Flutter `IconData` is not supported by Native Renderer components. Use `sfSymbol` or `nativeAsset` for native icons.
 - PlatformView Budget diagnostics warn; they do not automatically force fallback.
 - iOS integration testing currently starts with manual/device or simulator verification.

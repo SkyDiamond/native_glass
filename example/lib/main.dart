@@ -183,7 +183,8 @@ class _ShowcaseDemo extends StatelessWidget {
         const SizedBox(height: 16),
         NativeGlassButton(
           onPressed: () {},
-          child: const Text('Fallback button'),
+          renderMode: renderMode,
+          child: const Text('Native text button'),
         ),
         const SizedBox(height: 24),
         NativeGlassSegmentedControl(
@@ -259,7 +260,7 @@ class _ControlsAndSurfacesDemo extends StatelessWidget {
       title: 'Controls And Surfaces Demo',
       children: [
         const Text(
-          'NativeGlassSegmentedControl earns a native leaf-control path.',
+          'Segmented controls and text buttons can use native leaf-control paths.',
         ),
         const SizedBox(height: 16),
         NativeGlassSegmentedControl(
@@ -282,12 +283,27 @@ class _ControlsAndSurfacesDemo extends StatelessWidget {
         const SizedBox(height: 16),
         NativeGlassButton(
           onPressed: () {},
-          child: const Text('Enabled fallback button'),
+          renderMode: renderMode,
+          child: const Text('Enabled native text button'),
         ),
         const SizedBox(height: 12),
-        const NativeGlassButton(
+        NativeGlassButton(
           onPressed: null,
-          child: Text('Disabled fallback button'),
+          renderMode: renderMode,
+          child: const Text('Disabled native text button'),
+        ),
+        const SizedBox(height: 12),
+        NativeGlassButton(
+          onPressed: () {},
+          renderMode: renderMode,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add),
+              SizedBox(width: 8),
+              Text('Arbitrary child fallback'),
+            ],
+          ),
         ),
       ],
     );
