@@ -6,7 +6,7 @@ void main() {
     await tester.pumpWidget(const NativeGlassExampleApp());
 
     expect(find.text('Showcase'), findsWidgets);
-    expect(find.text('Phase 3 Showcase'), findsOneWidget);
+    expect(find.text('Component Showcase'), findsOneWidget);
 
     await tester.tap(find.text('Tab Bar').last);
     await tester.pumpAndSettle();

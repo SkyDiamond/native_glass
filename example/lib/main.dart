@@ -158,7 +158,7 @@ class _ShowcaseDemo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _DemoPage(
-      title: 'Phase 3 Showcase',
+      title: 'Component Showcase',
       children: [
         NativeGlassAvailabilityBuilder(
           builder: (context, availability) {
